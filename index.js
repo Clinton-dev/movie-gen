@@ -82,7 +82,9 @@ async function fetchTitle(synopsis) {
     max_tokens: 25,
     temperature: 0.8
   })
-  document.getElementById('output-title').innerText = response.data.choices[0].text.trim()
+  const title = response.data.choices[0].text.trim() 
+  document.getElementById('output-title').innerText = title
+  fetchImagePromt(title, synopsis)
 }
 
 async function fetchStars(synopsis){
@@ -122,7 +124,23 @@ async function fetchImagePromt(title, synopsis){
     image description: 
     `,
     max_tokens: 100,
-    temperature: 0
+    temperature: 0.8
   })
-  console.log(response.data.choices[0].text.trim())
+  fetchImageUrl(response.data.choices[0].text.trim())
+}
+
+async function fetchImageUrl(imagePrompt){
+  const response = await openai.createImage({
+    prompt: `${imagePrompt}. There should be no text in this image.`,
+    n: 1,
+    size: '256x256',
+    response_format: 'b64_json' 
+  })
+  document.getElementById('output-img-container').innerHTML = `<img src="data:image/png;base64,${response.data.data[0].b64_json}">`
+  setupInputContainer.innerHTML=`<button id="view-pitch-btn" class="view-pitch-btn">View Pitch</button>` 
+  document.getElementById('view-pitch-btn').addEventListener('click', ()=> {
+    document.getElementById('setup-container').style.display = 'none'
+    document.getElementById('output-container').style.display = 'flex'
+    movieBossText.innerText = `This idea is so good I'm jealous! It's gonna make you rich for sure! Remember, I want 10% 💰`
+  })
 }
